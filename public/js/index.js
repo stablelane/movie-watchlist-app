@@ -1,7 +1,7 @@
 const searchInput = document.getElementById('search-input')
 const searchBtn = document.getElementById('search-btn')
 const cardSection = document.getElementById('card-section')
-const watchlist = []
+
 
 searchInput.addEventListener("keypress", function(e){
     if(e.key === "Enter"){
@@ -13,17 +13,7 @@ document.addEventListener('click', function(e){
     if(e.target.dataset.movie){
         addDetails(e.target.dataset.movie)
     }else if(e.target.dataset.watchlist){
-        let movie = getWatchlist(e.target.dataset.watchlist)
-        movie.then(data => {
-            localStorage.setItem(`${data.imdbID}`, JSON.stringify(data))
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                const value = localStorage.getItem(key);
-                console.log(`${key}: ${value}`);
-            }
-        })
         addToWatchlist(e.target.dataset.watchlist)
-       
     }
 })
 
@@ -34,7 +24,7 @@ async function addToWatchlist(id) {
         body: JSON.stringify({ id: id }),
     })
     const result = await response.json()
-    console.log(result, 'hi')
+    console.log(result)
 }
 
 async function handleClick(){

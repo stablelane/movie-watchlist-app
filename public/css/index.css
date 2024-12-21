@@ -60,7 +60,7 @@ html, body {
     border-radius: 7px;
     z-index: 2;
 }
-.search-bar input{
+.search-bar input, form input{
     font-weight: 500;
     font-size: 1rem;
     padding: 0 0 0 25px;
@@ -83,6 +83,14 @@ html, body {
     color: #FFFFFF;
     cursor: pointer;
 
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    z-index: 2;
+    
+    
 }
 .content{
     background-color: #121212;
@@ -191,6 +199,40 @@ html, body {
     margin: 30% auto;
     text-align: center;
     width: 321px;
+}
+.login-container {
+    background-color: #2E2E2F;
+}
+form input{
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0 0 0 25px;
+    width: 74%;
+    height: 100%;
+    margin: 0 auto;
+    border: none;
+    background-color: #1f2937;
+    color: #A5A5A5;
+}
+form button{
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0;
+    width: 26%;
+    height: 100%;
+    border: none;
+    margin: 0 0;
+    background-color: #4B4B4B;
+    color: #FFFFFF;
+    cursor: pointer;
+
+}
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin: 0 auto;
+    
 }
 @media (min-width:550px){
     body{
