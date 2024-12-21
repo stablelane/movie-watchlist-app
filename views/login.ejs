@@ -9,10 +9,21 @@
     </head>
     <body>
         <div class="login-container">
+            <div class="login-header">
+                <h1>Welcome back</h1>
+                <p>Please enter your details to sign in</p>
+            </div>
             <form>
-                <input type="text" placeholder="Username" id="username">
-                <input type="password" placeholder="Password" id="password">
+                <label for="email">Email</label>
+                <input type="text" placeholder="Enter your email" id="email">
+                <label for="password">Password</label>
+                <input type="password" placeholder="Enter your password" id="password">
+                <button type="submit" class="login-button">Sign in</button>
             </form>
+            <div class="sign-up">
+                Don't have an account?<a href="#">Sign up</a>
+            </div>
+
         </div>
         <script src="/js/index.js"></script>
     </body>
