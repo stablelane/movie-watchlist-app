@@ -22,9 +22,20 @@ document.addEventListener('click', function(e){
                 console.log(`${key}: ${value}`);
             }
         })
+        addToWatchlist(e.target.dataset.watchlist)
        
     }
 })
+
+async function addToWatchlist(id) {
+    const response = await fetch('/watchlist', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json"},
+        body: JSON.stringify({ id: id }),
+    })
+    const result = await response.json()
+    console.log(result, 'hi')
+}
 
 async function handleClick(){
     const searchText = searchInput.value.replace(/ /g,'+')
@@ -116,4 +127,3 @@ async function getresult(id) {
     const data = await res.json()
     return data
 }
-

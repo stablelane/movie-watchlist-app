@@ -3,7 +3,8 @@ const mongoose = require('mongoose')
 const watchlistSchema = new mongoose.Schema({
     imdbId: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     data: {
         type: Map,
