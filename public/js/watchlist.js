@@ -68,6 +68,7 @@ async function populate(){
 async function getmovies() {
     const response = await fetch('/api/watchlist')
     const result = await response.json()
+    console.log(result)
     return result
     
 }

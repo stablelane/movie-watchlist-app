@@ -4,7 +4,7 @@ const Watchlist = require('../models/watchlist')
 
 router.get('/', async (req, res) => {
     try {
-
+        console.log(req.userId)
         const watchlist = await Watchlist.find({ userId: req.userId })
         res.json(watchlist)
     } catch (error) {
@@ -28,12 +28,13 @@ router.post('/', async (req, res) => {
             res.status(409).json({ error: 'Duplicate imdbId detected' });
         } else {
             res.status(500).json({ error: 'Error saving watchlist entry', details: error });
-        }    }
+        }
+    }
 })
 router.delete('/', async (req, res) => {
     try {
         const watchlist = await Watchlist.findOneAndDelete({ imdbId: req.body.id, userId: req.userId })
-        res.status(200).json({ message: 'Watchlist removed'})
+        res.status(200).json({ message: 'Watchlist removed' })
 
     } catch (error) {
         res.status(500).json({ message: 'error deleting watchlist', error: error })

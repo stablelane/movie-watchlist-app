@@ -1,14 +1,10 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
 const app = express()
-const qs = require('qs')
 const cookieParser = require('cookie-parser');
-const Watchlist = require('./models/watchlist')
-const User = require('./models/user')
-const { findOneAndUpdate } = require('./models/user')
-const watchlistRouter = require('./routes/watchlist')
+const apiWatchlistRouter = require('./routes/apiWatchlist')
+const authRoutes = require('./routes/authRoutes')
 require('dotenv').config()
 
 mongoose.connect('mongodb://localhost/moviewatchlist')
@@ -29,181 +25,21 @@ app.get('/watchlist', authenticateToken, (req, res) => {
     res.render('watchlist')
 })
 
-app.use('/api/watchlist',authenticateToken, watchlistRouter)
+app.use('/api/watchlist', authenticateToken, apiWatchlistRouter)
+
+
+app.use('/auth', authRoutes);
 
 
 
 
-app.get('/login', (req, res) => {
-    res.render('login')
-})
-app.post('/login', async (req, res) => {
-    try {
-        const user = await User.findOne({ email: req.body.email})
-        if (!user) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
-        if (await bcrypt.compare(req.body.password, user.password)){
-            console.log("password is correct")
-            const token = jwt.sign(user.id, process.env.ACCESS_TOKEN_SECRET)
-            // res.json({ accessToken: accessToken})
-            res.cookie('token', token, { httpOnly: true, secure: true,sameSite: 'None', maxAge: 299999.88 }); // secure flag for HTTPS
-
-            return res.json({ message: 'Login successful' });
-        } else {
-            console.log("password is incorrect")
-        }
-        
-        
-    } catch (error) {
-        res.status(403).json({ error: error.message})
-    }
-})
-app.get('/signup', (req, res) => {
-    res.render('signup')
-})
-app.post('/signup', async (req, res) => {
-    try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10)
-        const newUser = new User ({
-            email: req.body.email,
-            name: req.body.name,
-            password: hashedPassword
-        
-        })
-        await newUser.save()
-        res.redirect('/login')
-        
-    } catch (error) {
-        if (error.code === 11000) {
-            res.status(400).json({ error: "username already exists"})
-        } else {
-
-            res.status(500).json({ error: "Server error. Couldn't create user." });
-        }
-    }
-
-})
-
-app.get('/auth/google', (req, res) => {
-    const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth"
-    const options = {
-        redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URL,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        access_type: 'offline',
-        response_type: 'code',
-        prompt: 'consent',
-        scope: [
-            "https://www.googleapis.com/auth/userinfo.profile",
-            "https://www.googleapis.com/auth/userinfo.email",
-        ].join(" "),
-
-
-    }
-    // const qs = new URLSearchParams(options)
-    res.redirect(`${rootUrl}?${qs.stringify(options)}`)
-})
-
-app.get('/api/sessions/oauth/google', async (req, res) => {
-    // get the code from querystring
-
-    const code = req.query.code 
-
-    try {
-        // get the id and access token with the code
-        
-        const { id_token, access_token} = await getGoogleOAuthToken(code)
-        console.log({ id_token, access_token})
-    
-        // get user with tokens
-        const googleUser = await getGoogleUser({ id_token, access_token })
-        console.log(googleUser)
-        // upsert the user
-        
-        const user = await findAndUpdateUser({
-            email: googleUser.email
-        },{
-            email: googleUser.email,
-            name: googleUser.name,
-            picture: googleUser.picture
-        },{
-            upsert: true,
-            new: true
-        })
-        console.log(user,user.id)
-
-        // create a session
-        
-        // create access and refresh tokens
-        
-        // create jwt
-        const token = jwt.sign(user.id, process.env.ACCESS_TOKEN_SECRET)
-        console.log(token)
-        // set cookies
-        
-        res.cookie('token',token, { httpOnly: true, secure: true,sameSite: 'lax', maxAge: 299999.88 }) 
-        
-        // redirect back to client
-        res.redirect('/')
-    } catch (error) {
-        res.status(500).json({ message: "Failed to authorize Google user", error: error})
-        
-    }
-})
-
-async function findAndUpdateUser(query, update, options){
-    return User.findOneAndUpdate(query,update,options)
-}
-
-async function getGoogleUser({ id_token, access_token }) {
-    try {
-        const response = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${access_token}`, {
-            headers: {
-                Authorization: `Beared ${id_token}`
-            }
-        })
-        const result = await response.json()
-        return result
-    } catch (error) {
-        console.log(error)
-        res.status(500)
-    }
-}
-
-async function getGoogleOAuthToken(code) {
-    const url = "https://oauth2.googleapis.com/token"
-
-    const values = {
-        code,
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URL,
-        grant_type: "authorization_code",
-    }
-
-    try {
-        
-        const res = await fetch(`${url}?${qs.stringify(values)}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-        })
-        // console.log(qs.stringify(values))
-        const data = await res.json()
-        console.log(data)
-        return data
-    } catch (error) {
-        console.error()
-    }
-}
 
 function authenticateToken(req, res, next) {
     const token = req.cookies.token
     if (token == null) {
-        res.redirect('/login')
+        res.redirect('/auth/login')
     }
-    
+
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, userid) => {
         if (err) return res.status(403)
         req.userId = userid

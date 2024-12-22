@@ -4,7 +4,7 @@ document.getElementById('signup-form').addEventListener('submit', async (e) => {
     const email = document.getElementById("email").value
     const password = document.getElementById("password").value
     try {
-        const response = await fetch('/signup', {
+        const response = await fetch('/auth/signup', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, name, password})
