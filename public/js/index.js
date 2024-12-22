@@ -18,7 +18,7 @@ document.addEventListener('click', function(e){
 })
 
 async function addToWatchlist(id) {
-    const response = await fetch('/watchlist', {
+    const response = await fetch('api/watchlist', {
         method: 'POST',
         headers: { "Content-Type": "application/json"},
         body: JSON.stringify({ id: id }),

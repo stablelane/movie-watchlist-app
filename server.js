@@ -25,28 +25,14 @@ app.use(cookieParser());
 app.get('/', authenticateToken, (req, res) => {
     res.render('index')
 })
-
-app.use('/watchlist', watchlistRouter)
-
-
-app.get('/api/watchlist', authenticateToken, async (req, res) => {
-    try {
-
-        const watchlist = await Watchlist.find({ userId: req.userId })
-        res.json(watchlist)
-    } catch (error) {
-        res.status(404).json({ error: error })
-    }
+app.get('/watchlist', authenticateToken, (req, res) => {
+    res.render('watchlist')
 })
-app.delete('/api/watchlist', authenticateToken, async (req, res) => {
-    try {
-        const watchlist = await Watchlist.findOneAndDelete({ imdbId: req.body.id, userId: req.userId })
-        res.status(200).json({ message: 'Watchlist removed'})
 
-    } catch (error) {
-        res.status(500).json({ message: 'error deleting watchlist', error: error })
-    }
-})
+app.use('/api/watchlist',authenticateToken, watchlistRouter)
+
+
+
 
 app.get('/login', (req, res) => {
     res.render('login')
@@ -114,8 +100,8 @@ app.get('/auth/google', (req, res) => {
 
 
     }
-    const qs = new URLSearchParams(options)
-    res.redirect(`${rootUrl}?${qs.toString()}`)
+    // const qs = new URLSearchParams(options)
+    res.redirect(`${rootUrl}?${qs.stringify(options)}`)
 })
 
 app.get('/api/sessions/oauth/google', async (req, res) => {
