@@ -15,12 +15,15 @@ const watchlistSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        unique: true
     },
     createdAt: {
         type: Date,
         default: Date.now
     }
 })
+
+watchlistSchema.index({ userId: 1, imdbId: 1 }, { unique: true });
 
 const Watchlist = mongoose.model('Watchlist', watchlistSchema)
 
