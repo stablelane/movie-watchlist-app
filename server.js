@@ -30,7 +30,10 @@ app.use('/api/watchlist', authenticateToken, apiWatchlistRouter)
 
 app.use('/auth', authRoutes);
 
-
+app.get('/logout', (req, res) => {
+    res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'None' })
+    res.status(200).json({ message: 'Logged out successfully' })
+});
 
 
 

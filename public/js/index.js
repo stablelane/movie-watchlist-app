@@ -1,7 +1,7 @@
 const searchInput = document.getElementById('search-input')
 const searchBtn = document.getElementById('search-btn')
 const cardSection = document.getElementById('card-section')
-
+const logoutbtn = document.getElementById('logout-btn')
 
 searchInput.addEventListener("keypress", function(e){
     if(e.key === "Enter"){
@@ -16,6 +16,15 @@ document.addEventListener('click', function(e){
         addToWatchlist(e.target.dataset.watchlist)
     }
 })
+
+logoutbtn.addEventListener('click', async () =>{
+    const response = await fetch('/auth/logout')
+    if (response.ok) {
+        window.location.href = '/auth/login';  // Manually redirect to the login page
+    } else {
+        console.log('Logout failed');
+    
+}})
 
 async function addToWatchlist(id) {
     const response = await fetch('api/watchlist', {

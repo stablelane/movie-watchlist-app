@@ -29,6 +29,43 @@ html, body {
     background: rgba(0, 0, 0, 0.5); /* Adjust the opacity as needed */
     z-index: 1; /* Below the text */
 }
+.left-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    z-index: 2;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    z-index: 2;
+}
+
+.username {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #FFFFFF;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    background-color: rgba(75, 75, 75, 0.8);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    padding: 0.5em 1em;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s ease;
+}
+
+.logout-btn:hover {
+    background-color: rgba(75, 75, 75, 1);
+}
 .hero-head{
     position: relative;
     font-weight: 800;

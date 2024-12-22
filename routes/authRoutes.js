@@ -18,7 +18,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         if (await bcrypt.compare(req.body.password, user.password)) {
-            const token = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET);
+            const token = jwt.sign(user.id, process.env.ACCESS_TOKEN_SECRET);
             res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 300000 });
             return res.json({ message: 'Login successful' });
         } else {
@@ -27,6 +27,10 @@ router.post('/login', async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+router.get('/logout', (req, res) => {
+    res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'Lax' });
+    res.redirect(302, '/auth/login')
 });
 
 // Render signup page
@@ -99,7 +103,6 @@ router.get('/google/callback', async (req, res) => {
             upsert: true,
             new: true
         })
-        console.log(user,user.id)
 
         // create a session
         
