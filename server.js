@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const Watchlist = require('./models/watchlist')
 const User = require('./models/user')
 const { findOneAndUpdate } = require('./models/user')
+const watchlistRouter = require('./routes/watchlist')
 require('dotenv').config()
 
 mongoose.connect('mongodb://localhost/moviewatchlist')
@@ -20,13 +21,14 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser());
 
+
 app.get('/', authenticateToken, (req, res) => {
     res.render('index')
 })
 
-app.get('/watchlist', authenticateToken, (req, res) => {
-    res.render('watchlist')
-})
+app.use('/watchlist', watchlistRouter)
+
+
 app.get('/api/watchlist', authenticateToken, async (req, res) => {
     try {
 
@@ -44,25 +46,6 @@ app.delete('/api/watchlist', authenticateToken, async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'error deleting watchlist', error: error })
     }
-})
-app.post('/watchlist',authenticateToken, async (req, res) => {
-    try {
-        const response = await fetch(`http://www.omdbapi.com/?i=${req.body.id}&apikey=1170f02c`)
-        const data = await response.json()
-        const newWatchlist = new Watchlist({
-            imdbId: req.body.id,
-            data: data,
-            userId: req.userId
-        }
-        )
-        await newWatchlist.save()
-        res.status(200).json({ message: 'Watchlist entry added!' });
-    } catch (error) {
-        if (error.code === 11000) {
-            res.status(409).json({ error: 'Duplicate imdbId detected' });
-        } else {
-            res.status(500).json({ error: 'Error saving watchlist entry', details: error });
-        }    }
 })
 
 app.get('/login', (req, res) => {
