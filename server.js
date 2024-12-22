@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 const app = express()
 const qs = require('qs')
 const cookieParser = require('cookie-parser');
@@ -29,7 +30,7 @@ app.get('/watchlist', authenticateToken, (req, res) => {
 app.get('/api/watchlist', authenticateToken, async (req, res) => {
     try {
 
-        const watchlist = await Watchlist.find()
+        const watchlist = await Watchlist.find({ userId: req.userId })
         res.json(watchlist)
     } catch (error) {
         res.status(404).json({ error: error })
@@ -37,20 +38,21 @@ app.get('/api/watchlist', authenticateToken, async (req, res) => {
 })
 app.delete('/api/watchlist', authenticateToken, async (req, res) => {
     try {
-        const watchlist = await Watchlist.findOneAndDelete({ imdbId: req.body.id })
+        const watchlist = await Watchlist.findOneAndDelete({ imdbId: req.body.id, userId: req.userId })
         res.status(200).json({ message: 'Watchlist removed'})
 
     } catch (error) {
         res.status(500).json({ message: 'error deleting watchlist', error: error })
     }
 })
-app.post('/watchlist', async (req, res) => {
+app.post('/watchlist',authenticateToken, async (req, res) => {
     try {
         const response = await fetch(`http://www.omdbapi.com/?i=${req.body.id}&apikey=1170f02c`)
         const data = await response.json()
         const newWatchlist = new Watchlist({
             imdbId: req.body.id,
-            data: data
+            data: data,
+            userId: req.userId
         }
         )
         await newWatchlist.save()
@@ -66,11 +68,53 @@ app.post('/watchlist', async (req, res) => {
 app.get('/login', (req, res) => {
     res.render('login')
 })
+app.post('/login', async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email})
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+        if (await bcrypt.compare(req.body.password, user.password)){
+            console.log("password is correct")
+            const token = jwt.sign(user.id, process.env.ACCESS_TOKEN_SECRET)
+            // res.json({ accessToken: accessToken})
+            res.cookie('token', token, { httpOnly: true, secure: true,sameSite: 'None', maxAge: 299999.88 }); // secure flag for HTTPS
 
+            return res.json({ message: 'Login successful' });
+        } else {
+            console.log("password is incorrect")
+        }
+        
+        
+    } catch (error) {
+        res.status(403).json({ error: error.message})
+    }
+})
 app.get('/signup', (req, res) => {
     res.render('signup')
 })
+app.post('/signup', async (req, res) => {
+    try {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10)
+        const newUser = new User ({
+            email: req.body.email,
+            name: req.body.name,
+            password: hashedPassword
+        
+        })
+        await newUser.save()
+        res.redirect('/login')
+        
+    } catch (error) {
+        if (error.code === 11000) {
+            res.status(400).json({ error: "username already exists"})
+        } else {
 
+            res.status(500).json({ error: "Server error. Couldn't create user." });
+        }
+    }
+
+})
 
 app.get('/auth/google', (req, res) => {
     const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -187,7 +231,6 @@ async function getGoogleOAuthToken(code) {
 
 function authenticateToken(req, res, next) {
     const token = req.cookies.token
-    console.log(token)
     if (token == null) {
         res.redirect('/login')
     }

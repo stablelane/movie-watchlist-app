@@ -11,6 +11,11 @@ const watchlistSchema = new mongoose.Schema({
         of: mongoose.Schema.Types.Mixed, // This allows any type of data to be stored
         required: true
     },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
     createdAt: {
         type: Date,
         default: Date.now
