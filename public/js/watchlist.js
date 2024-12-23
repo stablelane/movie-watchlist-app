@@ -1,4 +1,5 @@
 const cardSection = document.getElementById('card-section')
+const logoutbtn = document.getElementById('logout-btn')
 
 populate()
 
@@ -10,6 +11,15 @@ document.addEventListener('click', function(e){
         deleteMovie(e.target.dataset.watchlist)
     }
 })
+
+logoutbtn.addEventListener('click', async () =>{
+    const response = await fetch('/auth/logout')
+    if (response.ok) {
+        window.location.href = '/auth/login';  // Manually redirect to the login page
+    } else {
+        console.log('Logout failed');
+    
+}})
 
 async function deleteMovie(id) {
     try {

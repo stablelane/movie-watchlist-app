@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken')
 const app = express()
 const cookieParser = require('cookie-parser');
 const apiWatchlistRouter = require('./routes/apiWatchlist')
-const authRoutes = require('./routes/authRoutes')
+const authRoutes = require('./routes/authRoutes');
+const User = require('./models/user');
 require('dotenv').config()
 
 mongoose.connect('mongodb://localhost/moviewatchlist')
@@ -18,11 +19,13 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser());
 
 
-app.get('/', authenticateToken, (req, res) => {
-    res.render('index')
+app.get('/', authenticateToken, async (req, res) => {
+    const user = await User.findById(req.userId)
+    res.render('index', { username: user.name || 'user' })
 })
-app.get('/watchlist', authenticateToken, (req, res) => {
-    res.render('watchlist')
+app.get('/watchlist', authenticateToken, async (req, res) => {
+    const user = await User.findById(req.userId)
+    res.render('watchlist', {username: user.name || 'user'})
 })
 
 app.use('/api/watchlist', authenticateToken, apiWatchlistRouter)
@@ -39,12 +42,12 @@ app.get('/logout', (req, res) => {
 
 function authenticateToken(req, res, next) {
     const token = req.cookies.token
-    if (token == null) {
+    if (!token) {
         res.redirect('/auth/login')
     }
 
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, userid) => {
-        if (err) return res.status(403)
+        if (err) return res.redirect('auth/login')
         req.userId = userid
         next()
     })
